@@ -20,7 +20,6 @@ if st.button("음원 추출하기"):
                         'preferredquality': '192',
                     }],
                     'outtmpl': '%(title)s.%(ext)s',
-                    # 차단 방지를 위한 필수 옵션들
                     'quiet': True,
                     'no_warnings': True,
                     'nocheckcertificate': True,
@@ -33,6 +32,25 @@ if st.button("음원 추출하기"):
                 }
                 
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    # 정보 먼저 가져오기
                     info = ydl.extract_info(url, download=True)
-                    filename = ydl.prepare_filename(info).replace('.webm', '.mp3
+                    # 파일명 처리 부분 (오타 수정됨)
+                    base_fn = ydl.prepare_filename(info)
+                    filename = os.path.splitext(base_fn)[0] + ".mp3"
+                
+                # 파일 읽어서 다운로드 버튼 만들기
+                if os.path.exists(filename):
+                    with open(filename, "rb") as f:
+                        btn = st.download_button(
+                            label="내 폰/컴으로 파일 저장하기",
+                            data=f,
+                            file_name=os.path.basename(filename),
+                            mime="audio/mp3"
+                        )
+                    st.success(f"✅ '{os.path.basename(filename)}' 추출 완료!")
+                else:
+                    st.error("파일을 찾을 수 없어. 변환 과정에 문제가 생긴 것 같아.")
+                
+            except Exception as e:
+                st.error(f"❌ 에러 발생: {e}")
+    else:
+        st.warning("링크부터 넣어줘, 친구야!")
